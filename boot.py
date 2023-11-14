@@ -65,3 +65,4 @@ while True:
 
     sat.beep(freq=2000)
     print("="*120)
+

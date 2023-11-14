@@ -146,3 +146,4 @@ class CubeSat:
             'AQI': self.ens.getAQI(),
             'ECO2': self.ens.getECO2()
         }
+
