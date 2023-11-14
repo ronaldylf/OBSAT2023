@@ -142,14 +142,14 @@ class CubeSat:
         try:
             #return 44330 * (1.0 - pow((self.pressure()/100) / 1004.73, 0.1903))
             self.local_pressure = self.pressure()
-            self.sea_level_pressure = 1008
+            self.sea_level_pressure = 1009
             
             self.pressure_ratio = (self.local_pressure/100) / self.sea_level_pressure
             
             # internacional barometric formula
             self.result = 44330*(1-(self.pressure_ratio**(1/5.255)))
             
-            return self.result
+            return self.result/10
             
         except Exception as e:
             print(e)
