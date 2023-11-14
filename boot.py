@@ -7,7 +7,7 @@ import network
 print("turning on...")
 sat = CubeSat() # inicia a classe do satélite
 sat.beep(freq=5000)
-sat.wifi_connect(ssid="MAKE_CURSINHO", password="nossainternet") #conecta a rede wi-fi
+if sat.internet_mode: sat.wifi_connect(ssid="MAKE_CURSINHO", password="nossainternet") #conecta a rede wi-fi
 sat.beep(freq=5000)
 sat.mount_sd() # monta cartão microSD
 print("sd mounted")
@@ -37,6 +37,7 @@ while True:
         'payload': {
             'umidade': sat.humidity(),
             'time': time(),
+            'altitude': sat.altitude()
 
         },
     }
@@ -50,18 +51,21 @@ while True:
         print("saved on sd card")
 
     #envia os dados via wi-fi
-    print("sending packet...")
-    try:
-        response = urequests.post(url=server, data=json_telemetry)
-        response.close()
-        print(f"{response.status_code} packet sent to {server}")
-    except Exception as e:
-        print("something bad happened:", e)
-        sta_if = network.WLAN(network.STA_IF)
-        print(f"sta_if.isconnected(): {sta_if.isconnected()}")
-        for i in range(10): sat.beep(); sleep(0.1)
-    except KeyboardInterrupt as e:
-        raise e
+    if sat.internet_mode:
+        print("sending packet...")
+        try:
+            response = urequests.post(url=server, data=json_telemetry)
+            response.close()
+            print(f"{response.status_code} packet sent to {server}")
+        except Exception as e:
+            print("something bad happened:", e)
+            sta_if = network.WLAN(network.STA_IF)
+            print(f"sta_if.isconnected(): {sta_if.isconnected()}")
+            for i in range(10): sat.beep(); sleep(0.1)
+        except KeyboardInterrupt as e:
+            raise e
+    else:
+        print(f"internet mode {str(sat.internet_mode).upper()}, skipping...")
 
     sat.beep(freq=2000)
     print("="*120)
