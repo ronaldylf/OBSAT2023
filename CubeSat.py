@@ -17,7 +17,10 @@ from myENS160 import myENS160
 
 class CubeSat:
     def __init__(self):
-        self.battery_level = 0
+        # configurations
+        self.internet_mode = False;
+        
+        # pins
         self.i2c = SoftI2C(scl=Pin(22), sda=Pin(21))
         self.spi = SoftSPI(-1,
               miso=Pin(19),
@@ -27,9 +30,13 @@ class CubeSat:
         self.cs = Pin(5, Pin.OUT)
         self.buzzer_gpio = 32
         self.battery_gpio = 35
+        self.battery_level = 0
     
     def reset(self):
         reset()
+        
+    def stop(self):
+        self.deinit_buzzer()
     
     def wifi_connect(self, ssid="", password=""):
         sta_if = network.WLAN(network.STA_IF)
@@ -130,7 +137,24 @@ class CubeSat:
         except Exception as e:
             print(e)
             return -1
-    
+        
+    def altitude(self):
+        try:
+            #return 44330 * (1.0 - pow((self.pressure()/100) / 1004.73, 0.1903))
+            self.local_pressure = self.pressure()
+            self.sea_level_pressure = 1008
+            
+            self.pressure_ratio = (self.local_pressure/100) / self.sea_level_pressure
+            
+            # internacional barometric formula
+            self.result = 44330*(1-(self.pressure_ratio**(1/5.255)))
+            
+            return self.result
+            
+        except Exception as e:
+            print(e)
+            return -1
+
     def humidity(self): # umidade em porcentagem (%)
         try:
             self.aht_sensor = aht.AHT2x(self.i2c, crc=True)
