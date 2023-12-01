@@ -29,7 +29,7 @@ class CubeSat:
         )
         self.cs = Pin(5, Pin.OUT)
         self.buzzer_gpio = 32
-        self.battery_gpio = 35
+        self.battery_gpio = 27
         self.battery_level = 0
     
     def reset(self):
@@ -73,7 +73,8 @@ class CubeSat:
     def get_battery_level(self): # nível da bateria em porcentagem (%)
         pot = ADC(Pin(self.battery_gpio, mode=Pin.IN))
         pot.atten(ADC.ATTN_11DB)
-        self.battery_level = round((pot.read()/4095)*1.09*100, 2)
+        print(f"analog reading: {pot.read()}")
+        self.battery_level = round((pot.read()/4095)*0.97*100, 2)
         return self.battery_level
     
     def gyroscope(self): # leitura do giroscópio
