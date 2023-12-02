@@ -47,7 +47,7 @@ while True:
     
     # salva no cartão microSD
     with open(f'/sd/telemetry.json', 'a+') as file:
-        file.write(json_telemetry+"\n")
+        file.write(json_telemetry+",\n")
         print("saved on sd card")
 
     #envia os dados via wi-fi
