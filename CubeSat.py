@@ -18,7 +18,7 @@ from myENS160 import myENS160
 class CubeSat:
     def __init__(self):
         # configurations
-        self.internet_mode = False;
+        self.internet_mode = True;
         
         # pins
         self.i2c = SoftI2C(scl=Pin(22), sda=Pin(21))
@@ -53,8 +53,9 @@ class CubeSat:
         os.mount(self.sd, '/sd')
     
     def clear_sd(self): # limpar arquivos do cartão micro SD
-        for file in os.listdir('/sd'):
-            if '.' in file: os.remove(f'/sd/{file}')
+        os.remove('/sd/telemetry.json')
+        #for file in os.listdir('/sd'):
+            #if '.' and in file: os.remove(f'/sd/{file}')
 
     def read_file(self, file_name): # lê o conteúdo de algum arquivo de texto
         with open(file_name, 'r+') as file: return file.read()
@@ -71,10 +72,14 @@ class CubeSat:
         self.deinit_buzzer()
     
     def get_battery_level(self): # nível da bateria em porcentagem (%)
-        pot = ADC(Pin(self.battery_gpio, mode=Pin.IN))
-        pot.atten(ADC.ATTN_11DB)
-        print(f"analog reading: {pot.read()}")
-        self.battery_level = round((pot.read()/4095)*0.97*100, 2)
+        try:
+            pot = ADC(Pin(self.battery_gpio, mode=Pin.IN))
+            pot.atten(ADC.ATTN_11DB)
+            print(f"analog reading: {pot.read()}")
+            self.battery_level = round((pot.read()/4095)*0.97*100, 2)
+        except Exception as e:
+            print(f"BATTERY ERROR: {str(e)}")
+            self.battery_level = 101
         return self.battery_level
     
     def gyroscope(self): # leitura do giroscópio
