@@ -6,16 +6,18 @@ import network
 
 print("turning on...")
 sat = CubeSat() # inicia a classe do satélite
+sat.internet_mode = True # usar internet para enviar os dados
 sat.beep(freq=5000)
-if sat.internet_mode: sat.wifi_connect(ssid="MAKE_CURSINHO", password="nossainternet") #conecta a rede wi-fi
+if sat.internet_mode: sat.wifi_connect(ssid="obsatserver", password="obsatpass") #conecta a rede wi-fi
 sat.beep(freq=5000)
 sat.mount_sd() # monta cartão microSD
 print("sd mounted")
 sat.beep(freq=5000)
 
 # variáveis editáveis
-server = "https://obsat.org.br/teste_post/envio.php" # servidor de envio dos dados via requisição POST
-min_interval = 1 # segundos entre cada execução
+#https://obsat.org.br/teste_post/envio.php
+server = "http://192.168.4.1:80/" # servidor de envio dos dados via requisição POST
+min_interval = 4*60 # segundos entre cada execução
 exec_num = 0
 
 while True:
@@ -29,7 +31,8 @@ while True:
     # captura dos dados de telemetria e payload
     telemetry = {
         'equipe': 33,
-        'bateria': sat.get_battery_level(),
+        #'bateria': sat.get_battery_level(),
+        'bateria': 50,
         'temperatura': sat.temperature(),
         'pressao': sat.pressure(),
         'giroscopio': sat.gyroscope(),
@@ -38,7 +41,6 @@ while True:
             'umidade': sat.humidity(),
             'time': time(),
             'altitude': sat.altitude()
-
         },
     }
     telemetry['payload'].update(sat.get_air_quality()) # adiciona ao payload os dados dos gases
@@ -52,11 +54,14 @@ while True:
 
     #envia os dados via wi-fi
     if sat.internet_mode:
-        print("sending packet...")
+        print(f"sending packet to {server}...")
         try:
-            response = urequests.post(url=server, data=json_telemetry)
+            headers = {
+                'content-type': "application/json"
+            }
+            response = urequests.post(url=server, data=json_telemetry, headers=headers, timeout=5)
             response.close()
-            print(f"{response.status_code} packet sent to {server}")
+            print(f"{response.status_code} packet sent")
         except Exception as e:
             print("something bad happened:", e)
             sta_if = network.WLAN(network.STA_IF)
